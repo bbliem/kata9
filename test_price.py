@@ -1,21 +1,23 @@
 import unittest
 
 from checkout import Checkout
-from pricing_rules import PricingRules, n_for_y, unit_price
+from pricing_rules import NforY, PricingRules, UnitPrice
 
-RULES = PricingRules({
-    'A': n_for_y({1: 50, 3: 130}),
-    'B': n_for_y({1: 30, 2: 45}),
-    'C': unit_price(20),
-    'D': unit_price(15),
-})
+RULES = PricingRules([
+    UnitPrice('A', 50),
+    UnitPrice('B', 30),
+    UnitPrice('C', 20),
+    UnitPrice('D', 15),
+    NforY('A', 3, 130),
+    NforY('B', 2, 45),
+])
 
 
 def checkout_total(goods):
-    co = Checkout(RULES)
+    checkout = Checkout(RULES)
     for item in goods:
-        co.scan(item)
-    return co.total()
+        checkout.scan(item)
+    return checkout.total()
 
 
 class TestPrice(unittest.TestCase):
@@ -41,21 +43,21 @@ class TestPrice(unittest.TestCase):
             self.assertEqual(total, checkout_total(goods))
 
     def test_incremental(self):
-        co = Checkout(RULES)
+        checkout = Checkout(RULES)
 
         def assert_total(expected):
-            self.assertEqual(expected, co.total())
+            self.assertEqual(expected, checkout.total())
 
         assert_total(0)
-        co.scan('A')
+        checkout.scan('A')
         assert_total(50)
-        co.scan('B')
+        checkout.scan('B')
         assert_total(80)
-        co.scan('A')
+        checkout.scan('A')
         assert_total(130)
-        co.scan('A')
+        checkout.scan('A')
         assert_total(160)
-        co.scan('B')
+        checkout.scan('B')
         assert_total(175)
 
 
